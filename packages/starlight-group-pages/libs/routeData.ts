@@ -13,7 +13,7 @@ import {
 } from "./overview";
 import { getPagination } from "./pagination";
 import { stripLeadingAndTrailingSlashes } from "./path";
-import { getSidebarOverviews, insertOverviewLinks } from "./sidebar";
+import { addGroupPageLinks, getSidebarOverviews } from "./sidebar";
 
 export async function updateStarlightRoute(
   starlightRoute: StarlightRouteData,
@@ -31,6 +31,7 @@ export async function updateStarlightRoute(
   const overview = getCurrentOverview(starlightRoute, {
     ...sidebarOptions,
     currentSlug,
+    lang: starlightRoute.lang,
     overviews,
   });
 
@@ -38,7 +39,12 @@ export async function updateStarlightRoute(
     const label = t("starlightGroupPages.sidebarLink");
 
     if (
-      insertOverviewLinks(overviews, { ...sidebarOptions, currentSlug, label })
+      addGroupPageLinks(overviews, {
+        ...sidebarOptions,
+        currentSlug,
+        label,
+        mode: config.sidebarLink,
+      })
     ) {
       starlightRoute.pagination = getPagination(
         starlightRoute.sidebar,
@@ -77,18 +83,48 @@ function getCurrentOverview(
     ? getGroupOverview(sidebarOverview, options)
     : getDirectoryOverview(directory, options);
 
-  if (isGeneratedPage) updatePageTitle(starlightRoute, overview.title);
+  if (isGeneratedPage) updateGeneratedPageMetadata(starlightRoute, overview);
 
   return overview;
 }
 
-function updatePageTitle(starlightRoute: StarlightRouteData, title: string) {
+function updateGeneratedPageMetadata(
+  starlightRoute: StarlightRouteData,
+  overview: Overview
+) {
   const previousTitle = starlightRoute.entry.data.title;
 
-  starlightRoute.entry.data.title = title;
+  starlightRoute.entry.data.title = overview.title;
   starlightRoute.head = starlightRoute.head.map((tag) =>
-    getUpdatedHeadTag(tag, previousTitle, title)
+    getUpdatedHeadTag(tag, previousTitle, overview.title)
   );
+
+  if (overview.description) {
+    starlightRoute.entry.data.description = overview.description;
+    starlightRoute.head.push(
+      ...getDescriptionHeadTags(overview.description).filter(
+        (tag) => !hasHeadTag(starlightRoute.head, tag)
+      )
+    );
+  }
+}
+
+function hasHeadTag(head: HeadTag[], tag: HeadTag): boolean {
+  return head.some(
+    ({ attrs }) =>
+      attrs?.["name"] === tag.attrs?.["name"] &&
+      attrs?.["property"] === tag.attrs?.["property"]
+  );
+}
+
+function getDescriptionHeadTags(description: string): HeadTag[] {
+  return [
+    { tag: "meta", attrs: { name: "description", content: description } },
+    {
+      tag: "meta",
+      attrs: { property: "og:description", content: description },
+    },
+  ];
 }
 
 function getUpdatedHeadTag(

@@ -1,0 +1,64 @@
+---
+import { Badge } from "@astrojs/starlight/components";
+
+import { type SidebarGroup, getGroupLabelLink } from "../libs/sidebar";
+
+interface Props {
+  group: SidebarGroup;
+}
+
+const { group } = Astro.props;
+
+const link = getGroupLabelLink(group);
+---
+
+{link && (
+  <a
+    href={link.href}
+    aria-current={link.isCurrent ? "page" : undefined}
+    class="sl-group-pages-link"
+  >
+    <span>{group.label}</span>
+    {group.badge && (
+      <Badge
+        variant={group.badge.variant}
+        class={group.badge.class}
+        text={group.badge.text}
+      />
+    )}
+  </a>
+)}
+
+<style>
+  @layer starlight.core {
+    a {
+      display: block;
+      border-radius: 0.25rem;
+      text-decoration: none;
+      padding-block: 0.2em;
+      padding-inline: var(--sl-sidebar-item-padding-inline)
+        calc(1.25rem + 2 * var(--sl-sidebar-item-padding-inline));
+      line-height: 1.4;
+      font-size: var(--sl-text-lg);
+      font-weight: 600;
+      color: var(--sl-color-white);
+    }
+
+    [aria-current="page"],
+    [aria-current="page"]:hover,
+    [aria-current="page"]:focus {
+      color: var(--sl-color-text-invert);
+      background-color: var(--sl-color-text-accent);
+    }
+
+    a > *:not(:last-child) {
+      margin-inline-end: 0.25em;
+    }
+
+    @media (min-width: 50rem) {
+      a {
+        font-size: var(--sl-text-base);
+      }
+    }
+  }
+</style>

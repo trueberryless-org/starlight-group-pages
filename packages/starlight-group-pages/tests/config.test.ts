@@ -9,7 +9,7 @@ describe("validateConfig", () => {
       exclude: [],
       extendIndexPages: true,
       layout: "grid",
-      sidebarLink: true,
+      sidebarLink: "item",
     });
   });
 
@@ -27,6 +27,12 @@ describe("validateConfig", () => {
       layout: "list",
       sidebarLink: false,
     });
+  });
+
+  test("accepts all sidebar link modes", () => {
+    expect(validateConfig({ sidebarLink: "label" }).sidebarLink).toBe("label");
+    expect(validateConfig({ sidebarLink: false }).sidebarLink).toBe(false);
+    expect(() => validateConfig({ sidebarLink: true })).toThrow(AstroError);
   });
 
   test("throws a readable error for invalid configurations", () => {

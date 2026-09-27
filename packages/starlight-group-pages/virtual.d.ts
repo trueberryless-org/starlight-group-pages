@@ -9,3 +9,9 @@ declare module "virtual:starlight-group-pages/context" {
 
   export default StarlightGroupPagesContext;
 }
+
+declare module "virtual:starlight/components/MobileMenuFooter" {
+  const MobileMenuFooter: typeof import("@astrojs/starlight/components/MobileMenuFooter.astro").default;
+
+  export default MobileMenuFooter;
+}

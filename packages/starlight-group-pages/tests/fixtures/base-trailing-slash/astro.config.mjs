@@ -7,7 +7,7 @@ export default defineConfig({
   trailingSlash: "never",
   integrations: [
     starlight({
-      title: "Overview Pages",
+      title: "Group Pages",
       pagefind: false,
       plugins: [starlightGroupPages()],
       sidebar: [

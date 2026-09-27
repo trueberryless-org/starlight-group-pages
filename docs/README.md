@@ -10,6 +10,9 @@ Run the documentation locally by running the following command in your terminal:
 pnpm run dev
 ```
 
+The demo is also built with the `sidebarLink: "label"` option and served at `/label/`.
+Run this variant locally with `pnpm run dev:label`.
+
 Content can be found in the [`src/content/docs/`](https://github.com/trueberryless-org/starlight-group-pages/tree/main/docs/src/content/docs) directory.
 
 ## License

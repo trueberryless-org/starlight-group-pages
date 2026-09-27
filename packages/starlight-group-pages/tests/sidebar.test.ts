@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
 
-import { getSidebarOverviews, insertOverviewLinks } from "../libs/sidebar";
+import {
+  addGroupPageLinks,
+  getGroupEntries,
+  getGroupLabelLink,
+  getSidebarOverviews,
+  isSidebarGroupOpen,
+} from "../libs/sidebar";
 import {
   createConfig,
   createContext,
@@ -136,14 +142,15 @@ describe("getSidebarOverviews", () => {
   });
 });
 
-describe("insertOverviewLinks", () => {
+describe("addGroupPageLinks", () => {
   test("adds a link to the overview page at the start of groups", () => {
     const guides = createGroup("Guides", [createLink("/guides/a/")]);
     const overviews = getSidebarOverviews([guides], options);
 
     expect(
-      insertOverviewLinks(overviews, {
+      addGroupPageLinks(overviews, {
         ...options,
+        mode: "item",
         currentSlug: "guides",
         label: "Overview",
       })
@@ -161,8 +168,9 @@ describe("insertOverviewLinks", () => {
     const overviews = getSidebarOverviews([reference], options);
 
     expect(
-      insertOverviewLinks(overviews, {
+      addGroupPageLinks(overviews, {
         ...options,
+        mode: "item",
         currentSlug: "",
         label: "Overview",
       })
@@ -175,11 +183,74 @@ describe("insertOverviewLinks", () => {
     const overviews = getSidebarOverviews([secret], options);
 
     expect(
-      insertOverviewLinks(overviews, {
+      addGroupPageLinks(overviews, {
         ...options,
+        mode: "item",
         currentSlug: "",
         label: "Overview",
       })
     ).toBe(false);
+  });
+});
+
+describe("addGroupPageLinks with the label mode", () => {
+  const labelOptions = {
+    ...options,
+    currentSlug: "",
+    label: "Overview",
+    mode: "label" as const,
+  };
+
+  test("turns the group label into a link", () => {
+    const guides = createGroup("Guides", [createLink("/guides/a/", "A")]);
+    const overviews = getSidebarOverviews([guides], options);
+
+    expect(
+      addGroupPageLinks(overviews, { ...labelOptions, currentSlug: "guides" })
+    ).toBe(true);
+    expect(getGroupLabelLink(guides)).toMatchObject({
+      href: "/guides/",
+      isCurrent: true,
+      label: "Guides",
+    });
+    expect(getGroupEntries(guides)).toEqual([createLink("/guides/a/", "A")]);
+  });
+
+  test("replaces an existing link to the group page", () => {
+    const reference = createGroup("Reference", [
+      createLink("/reference/api/", "API"),
+      createLink("/reference/", "Reference"),
+    ]);
+    const overviews = getSidebarOverviews([reference], options);
+
+    addGroupPageLinks(overviews, labelOptions);
+
+    expect(getGroupLabelLink(reference)?.href).toBe("/reference/");
+    expect(getGroupEntries(reference)).toEqual([
+      createLink("/reference/api/", "API"),
+    ]);
+  });
+
+  test("keeps groups with a hidden index page unchanged", () => {
+    const secret = createGroup("Secret", [createLink("/secret/d/")]);
+    const overviews = getSidebarOverviews([secret], options);
+
+    expect(addGroupPageLinks(overviews, labelOptions)).toBe(false);
+    expect(getGroupLabelLink(secret)).toBeUndefined();
+  });
+});
+
+describe("isSidebarGroupOpen", () => {
+  test("opens expanded groups and groups containing the current page", () => {
+    const collapsed = { ...createGroup("A", [createLink("/a/")]), collapsed: true };
+
+    expect(isSidebarGroupOpen(createGroup("A", [createLink("/a/")]))).toBe(true);
+    expect(isSidebarGroupOpen(collapsed)).toBe(false);
+    expect(
+      isSidebarGroupOpen({
+        ...collapsed,
+        entries: [createGroup("B", [createLink("/b/", "B", true)])],
+      })
+    ).toBe(true);
   });
 });

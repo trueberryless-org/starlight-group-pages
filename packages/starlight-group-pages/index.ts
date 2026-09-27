@@ -6,7 +6,10 @@ import {
   type StarlightGroupPagesUserConfig,
   validateConfig,
 } from "./libs/config";
-import { getComponentOverrides } from "./libs/starlight";
+import {
+  getComponentOverrides,
+  getOverriddenComponents,
+} from "./libs/starlight";
 import { vitePluginStarlightGroupPages } from "./libs/vite";
 import { Translations } from "./translations";
 
@@ -32,13 +35,14 @@ export default function starlightGroupPages(
       }) {
         addRouteMiddleware({
           entrypoint: "starlight-group-pages/middleware",
+          order: "post",
         });
 
         updateStarlightConfig({
           components: getComponentOverrides(
             starlightConfig.components,
             logger,
-            ["MarkdownContent"]
+            getOverriddenComponents(config)
           ),
         });
 

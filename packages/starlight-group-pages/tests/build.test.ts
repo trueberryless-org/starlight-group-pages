@@ -35,7 +35,7 @@ describe("basic", () => {
     const html = readFixtureOutput("basic", "guides/index.html");
 
     expect(getPageTitle(html)).toBe("Guides");
-    expect(getDocumentTitle(html)).toBe("Guides | Overview Pages");
+    expect(getDocumentTitle(html)).toBe("Guides | Group Pages");
     expect(html).toContain('<meta property="og:title" content="Guides"/>');
   });
 
@@ -54,8 +54,23 @@ describe("basic", () => {
         href: "/guides/deployment/",
         title: "Deployment",
       },
-      { description: undefined, href: "/guides/advanced/", title: "advanced" },
+      {
+        description: "Plugins &lt;3 and Theming",
+        href: "/guides/advanced/",
+        title: "advanced",
+      },
     ]);
+  });
+
+  test("describes generated pages with a summary of their entries", () => {
+    const html = readFixtureOutput("basic", "guides/index.html");
+
+    expect(html).toContain(
+      '<meta name="description" content="Installation, Deployment, and advanced"/>'
+    );
+    expect(html).toContain(
+      '<meta property="og:description" content="Installation, Deployment, and advanced"/>'
+    );
   });
 
   test("escapes labels and descriptions", () => {
@@ -203,6 +218,18 @@ describe("options", () => {
     ]);
   });
 
+  test("keeps a site-wide description like Starlight does", () => {
+    const html = readFixtureOutput("options", "guides/index.html");
+
+    expect(html.match(/<meta name="description"/g)).toHaveLength(1);
+    expect(html).toContain(
+      '<meta name="description" content="Site description"/>'
+    );
+    expect(html).toContain(
+      '<meta property="og:description" content="Installation, Deployment, and advanced"/>'
+    );
+  });
+
   test("supports the list layout", () => {
     expect(hasCardGrid(readFixtureOutput("options", "guides/index.html"))).toBe(
       false
@@ -247,7 +274,7 @@ describe("manual-sidebar", () => {
         title: "Deployment",
       },
       {
-        description: undefined,
+        description: "Theming and Plugins &lt;3",
         href: "/guides/advanced/",
         title: "Advanced guides",
       },
@@ -300,7 +327,7 @@ describe("base-trailing-slash", () => {
       label: "Overview",
     });
     expect(getOverviewCards(html)).toContainEqual({
-      description: undefined,
+      description: "Plugins &lt;3 and Theming",
       href: "/docs/guides/advanced",
       title: "advanced",
     });
@@ -322,7 +349,7 @@ describe("build-format-file", () => {
       label: "Overview",
     });
     expect(getOverviewCards(html)).toContainEqual({
-      description: undefined,
+      description: "Plugins &lt;3 and Theming",
       href: "/guides/advanced.html",
       title: "advanced",
     });
@@ -393,5 +420,75 @@ describe("i18n-no-root", () => {
       isCurrent: true,
       label: "Vue d’ensemble",
     });
+  });
+});
+
+describe("sidebar-label", () => {
+  beforeAll(async () => {
+    const { output, status } = await buildFixture("sidebar-label");
+    expect(status, output).toBe("success");
+  });
+
+  test("turns group labels into links to their group page", () => {
+    const html = readFixtureOutput("sidebar-label", "guides/installation/index.html");
+
+    expect(getSidebarLinks(html)).toEqual([
+      { href: "/", isCurrent: false, label: "Home" },
+      { href: "/guides/", isCurrent: false, label: "Guides" },
+      { href: "/guides/installation/", isCurrent: true, label: "Installation" },
+      { href: "/guides/deployment/", isCurrent: false, label: "Deployment" },
+      { href: "/guides/advanced/", isCurrent: false, label: "advanced" },
+      {
+        href: "/guides/advanced/plugins/",
+        isCurrent: false,
+        label: "Plugins &lt;3",
+      },
+      { href: "/guides/advanced/theming/", isCurrent: false, label: "Theming" },
+      { href: "/reference/", isCurrent: false, label: "Reference" },
+      { href: "/reference/api/", isCurrent: false, label: "API" },
+      { href: "/reference/cli/", isCurrent: false, label: "CLI" },
+    ]);
+  });
+
+  test("keeps a separate toggle for each group", () => {
+    const html = readFixtureOutput("sidebar-label", "guides/index.html");
+
+    expect(html).toMatch(
+      /<a href="\/guides\/" aria-current="page" class="sl-group-pages-link[^"]*">/
+    );
+    expect(html).toMatch(
+      /<summary[^>]*><span class="sr-only[^"]*">Guides<\/span>/
+    );
+  });
+
+  test("uses group labels in the pagination", () => {
+    expect(
+      getPagination(
+        readFixtureOutput("sidebar-label", "guides/installation/index.html")
+      )
+    ).toEqual({
+      next: { href: "/guides/deployment/", label: "Deployment" },
+      prev: { href: "/guides/", label: "Guides" },
+    });
+  });
+});
+
+describe("generate-id", () => {
+  beforeAll(async () => {
+    const { output, status } = await buildFixture("generate-id");
+    expect(status, output).toBe("success");
+  });
+
+  test("supports custom entry IDs and group labels updated by route middleware", () => {
+    const html = readFixtureOutput("generate-id", "guides/index.html");
+
+    expect(getOverviewCards(html)[0]).toEqual({
+      description: "Plugins and Theming",
+      href: "/guides/advanced/",
+      title: "Advanced",
+    });
+    expect(
+      getPageTitle(readFixtureOutput("generate-id", "guides/advanced/index.html"))
+    ).toBe("Advanced");
   });
 });

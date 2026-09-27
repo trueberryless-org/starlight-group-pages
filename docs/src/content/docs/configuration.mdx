@@ -59,8 +59,13 @@ The layout of the link cards:
 
 ### `sidebarLink`
 
-**Type:** `boolean`  
-**Default:** `true`
+**Type:** `'item' | 'label' | false`  
+**Default:** `'item'`
 
-Whether to add an “Overview” link to the group page as the first item of each sidebar group.
-See [“Sidebar and pagination”](/group-pages/#sidebar-and-pagination).
+How sidebar groups link to their group page:
+
+- `item`: adds an “Overview” link as the first item of the group
+- `label`: turns the group label into a link and keeps a separate button to expand and collapse the group
+- `false`: adds no link
+
+See [“Sidebar and pagination”](/group-pages/#sidebar-and-pagination) and compare the `item` and `label` options in the [demo](/demo/).

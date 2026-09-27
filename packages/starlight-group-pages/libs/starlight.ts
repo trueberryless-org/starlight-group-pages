@@ -1,6 +1,8 @@
 import type { StarlightUserConfig } from "@astrojs/starlight/types";
 import type { AstroIntegrationLogger } from "astro";
 
+import type { StarlightGroupPagesConfig } from "./config";
+
 export function getComponentOverrides(
   components: StarlightUserConfig["components"],
   logger: AstroIntegrationLogger,
@@ -11,6 +13,14 @@ export function getComponentOverrides(
     .map((override) => [override, getOverrideEntrypoint(override)]);
 
   return { ...components, ...Object.fromEntries(entries) };
+}
+
+export function getOverriddenComponents(
+  config: Pick<StarlightGroupPagesConfig, "sidebarLink">
+): StarlightComponent[] {
+  return config.sidebarLink === "label"
+    ? ["MarkdownContent", "Sidebar"]
+    : ["MarkdownContent"];
 }
 
 function hasComponentOverride(

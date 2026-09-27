@@ -38,6 +38,7 @@ function getOptions(currentSlug: string, overviews: SidebarOverview[] = []) {
     context: createContext(),
     currentSlug,
     docs,
+    lang: "en",
     locale: undefined,
     overviews,
   };
@@ -64,6 +65,7 @@ describe("getGroupOverview", () => {
       })
     ).toEqual({
       title: "Guides",
+      description: "A, advanced, and Astro",
       entries: [
         {
           type: "link",
@@ -134,10 +136,41 @@ describe("getGroupOverview", () => {
   });
 });
 
+describe("getGroupOverview descriptions", () => {
+  test("summarizes nested groups without an index page description", () => {
+    const summaryDocs = createDocs([
+      createEntry("guides/a", { title: "A" }),
+      createEntry("guides/advanced/b", { title: "B" }),
+      createEntry("guides/advanced/c", { title: "C" }),
+    ]);
+    const options = { ...getOptions("guides"), docs: summaryDocs };
+    const advanced = createGroup("Advanced", [
+      createLink("/guides/advanced/b/", "B"),
+      createLink("/guides/advanced/c/", "C"),
+    ]);
+    const guides = createGroup("Guides", [
+      createLink("/guides/a/", "A"),
+      advanced,
+    ]);
+    const overviews = getSidebarOverviews([guides], options);
+
+    expect(
+      getGroupOverview(getFirstOverview(overviews), { ...options, overviews })
+        .entries[1]
+    ).toEqual({
+      type: "link",
+      label: "Advanced",
+      href: "/guides/advanced/",
+      description: "B and C",
+    });
+  });
+});
+
 describe("getDirectoryOverview", () => {
   test("lists the visible pages and subdirectories sorted like the sidebar", () => {
     expect(getDirectoryOverview("guides", getOptions("guides"))).toEqual({
       title: "guides",
+      description: "Bee, A, and Advanced",
       entries: [
         {
           type: "link",
@@ -158,6 +191,26 @@ describe("getDirectoryOverview", () => {
           description: "About advanced",
         },
       ],
+    });
+  });
+
+  test("summarizes subdirectories with the labels of their direct children only", () => {
+    const nestedDocs = createDocs([
+      createEntry("guides/a", { title: "A" }),
+      createEntry("guides/advanced/b", { title: "B" }),
+      createEntry("guides/advanced/deep/c", { title: "C" }),
+    ]);
+
+    expect(
+      getDirectoryOverview("guides", {
+        ...getOptions("guides"),
+        docs: nestedDocs,
+      }).entries[1]
+    ).toEqual({
+      type: "link",
+      label: "advanced",
+      href: "/guides/advanced/",
+      description: "B and deep",
     });
   });
 

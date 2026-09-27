@@ -10,8 +10,11 @@ const site =
     ? process.env.DEPLOY_PRIME_URL
     : process.env.URL) ?? "https://starlight-group-pages.netlify.app";
 
+const isLabelDemo = process.env.DEMO_SIDEBAR_LINK === "label";
+
 export default defineConfig({
   site,
+  ...(isLabelDemo ? { base: "/label", outDir: "./dist/label" } : {}),
   integrations: [
     starlight({
       title: "Starlight Group Pages",
@@ -30,6 +33,14 @@ export default defineConfig({
             content: "Automatic overview pages for sidebar groups.",
           },
         },
+        ...(isLabelDemo
+          ? [
+              {
+                tag: "meta" as const,
+                attrs: { name: "robots", content: "noindex" },
+              },
+            ]
+          : []),
       ],
       social: [
         {
@@ -43,11 +54,13 @@ export default defineConfig({
           "https://github.com/trueberryless-org/starlight-group-pages/edit/main/docs/",
       },
       plugins: [
-        starlightLinksValidator({ exclude: ["/demo/"] }),
+        ...(isLabelDemo
+          ? []
+          : [starlightLinksValidator({ exclude: ["/demo/"] })]),
         starlightPluginsDocsComponents({
           pluginName: "starlight-group-pages",
         }),
-        starlightGroupPages(),
+        starlightGroupPages({ sidebarLink: isLabelDemo ? "label" : "item" }),
       ],
       sidebar: [
         {
@@ -56,11 +69,13 @@ export default defineConfig({
             "getting-started",
             "group-pages",
             "customization",
+            "i18n",
             "configuration",
           ],
         },
         {
           label: "Demo",
+          collapsed: true,
           items: [
             {
               label: "Guides",
@@ -70,14 +85,11 @@ export default defineConfig({
               label: "Reference",
               items: [{ autogenerate: { directory: "demo/reference" } }],
             },
-            {
-              label: "Tutorials",
-              items: [{ autogenerate: { directory: "demo/tutorials" } }],
-            },
           ],
         },
       ],
       credits: true,
+      routeMiddleware: "./src/routeData.ts",
     }),
   ],
 });

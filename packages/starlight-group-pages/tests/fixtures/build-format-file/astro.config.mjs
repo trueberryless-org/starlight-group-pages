@@ -6,7 +6,7 @@ export default defineConfig({
   build: { format: "file" },
   integrations: [
     starlight({
-      title: "Overview Pages",
+      title: "Group Pages",
       pagefind: false,
       plugins: [starlightGroupPages()],
       sidebar: [

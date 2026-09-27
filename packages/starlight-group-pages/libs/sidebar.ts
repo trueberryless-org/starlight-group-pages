@@ -7,6 +7,8 @@ import { localizeSlug, stripSlugLocale } from "./locale";
 import { getCommonPath, getParentPath, hrefToSlug, slugToHref } from "./path";
 import type { StarlightGroupPagesContext } from "./vite";
 
+const GroupLabelLinkAttribute = "data-starlight-group-pages-label-link";
+
 export function getSidebarOverviews(
   sidebar: SidebarEntry[],
   options: SidebarOptions
@@ -39,21 +41,51 @@ export function getSidebarOverviews(
   });
 }
 
-export function insertOverviewLinks(
+export function addGroupPageLinks(
   overviews: SidebarOverview[],
-  options: SidebarOptions & { currentSlug: string; label: string }
+  options: GroupPageLinkOptions
 ): boolean {
-  const missingOverviews = overviews.filter(
-    (overview) =>
-      !hasOverviewLink(overview, options) &&
-      !isHiddenOverviewPage(overview, options)
+  const visibleOverviews = overviews.filter(
+    (overview) => !isHiddenOverviewPage(overview, options)
+  );
+
+  if (options.mode === "label") {
+    for (const overview of visibleOverviews) {
+      addGroupLabelLink(overview, options);
+    }
+
+    return visibleOverviews.length > 0;
+  }
+
+  const missingOverviews = visibleOverviews.filter(
+    (overview) => !hasOverviewLink(overview, options)
   );
 
   for (const overview of missingOverviews) {
-    overview.group.entries.unshift(getOverviewLink(overview, options));
+    overview.group.entries.unshift(
+      getOverviewLink(overview, options.label, options)
+    );
   }
 
   return missingOverviews.length > 0;
+}
+
+export function getGroupLabelLink(
+  group: SidebarGroup
+): SidebarLink | undefined {
+  const [firstEntry] = group.entries;
+
+  return firstEntry?.type === "link" && isGroupLabelLink(firstEntry)
+    ? firstEntry
+    : undefined;
+}
+
+export function getGroupEntries(group: SidebarGroup): SidebarEntry[] {
+  return getGroupLabelLink(group) ? group.entries.slice(1) : group.entries;
+}
+
+export function isSidebarGroupOpen(group: SidebarGroup): boolean {
+  return hasCurrentLink(group.entries) || !group.collapsed;
 }
 
 export function getSidebarLinks(sidebar: SidebarEntry[]): SidebarLink[] {
@@ -95,14 +127,48 @@ function getLinkDirectory(
     : getParentPath(relativeSlug);
 }
 
+function addGroupLabelLink(
+  overview: SidebarOverview,
+  options: GroupPageLinkOptions
+) {
+  const entries = overview.group.entries.filter(
+    (entry) => !isOverviewLink(entry, overview, options)
+  );
+
+  overview.group.entries = [
+    {
+      ...getOverviewLink(overview, overview.group.label, options),
+      attrs: { [GroupLabelLinkAttribute]: "" },
+    },
+    ...entries,
+  ];
+}
+
+function isGroupLabelLink(link: SidebarLink): boolean {
+  return Object.hasOwn(link.attrs, GroupLabelLinkAttribute);
+}
+
+function hasCurrentLink(entries: SidebarEntry[]): boolean {
+  return getSidebarLinks(entries).some((link) => link.isCurrent);
+}
+
 function hasOverviewLink(
   overview: SidebarOverview,
   options: SidebarOptions
 ): boolean {
-  return overview.group.entries.some(
-    (entry) =>
-      entry.type === "link" &&
-      hrefToSlug(entry.href, options.context) === overview.slug
+  return overview.group.entries.some((entry) =>
+    isOverviewLink(entry, overview, options)
+  );
+}
+
+function isOverviewLink(
+  entry: SidebarEntry,
+  overview: SidebarOverview,
+  options: SidebarOptions
+): boolean {
+  return (
+    entry.type === "link" &&
+    hrefToSlug(entry.href, options.context) === overview.slug
   );
 }
 
@@ -122,11 +188,12 @@ function isHiddenOverviewPage(
 
 function getOverviewLink(
   overview: SidebarOverview,
-  options: { currentSlug: string; label: string }
+  label: string,
+  options: { currentSlug: string }
 ): SidebarLink {
   return {
     type: "link",
-    label: options.label,
+    label,
     href: overview.href,
     isCurrent: overview.slug === options.currentSlug,
     badge: undefined,
@@ -139,6 +206,12 @@ export interface SidebarOptions {
   context: StarlightGroupPagesContext;
   docs: DocsIndex;
   locale: string | undefined;
+}
+
+export interface GroupPageLinkOptions extends SidebarOptions {
+  currentSlug: string;
+  label: string;
+  mode: Exclude<StarlightGroupPagesConfig["sidebarLink"], false>;
 }
 
 export interface SidebarOverview {

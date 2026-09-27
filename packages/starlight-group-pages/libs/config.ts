@@ -27,12 +27,13 @@ const configSchema = z
      */
     layout: z.enum(["grid", "list"]).default("grid"),
     /**
-     * Whether a link to the group page should be added as the first item of each sidebar group.
+     * How sidebar groups link to their group page: `item` adds an “Overview” link as the first item of the group,
+     * `label` turns the group label into a link, and `false` adds no link.
      *
-     * @default true
+     * @default "item"
      * @see https://starlight-group-pages.netlify.app/configuration/#sidebarlink
      */
-    sidebarLink: z.boolean().default(true),
+    sidebarLink: z.enum(["item", "label"]).or(z.literal(false)).default("item"),
   })
   .prefault({});
 

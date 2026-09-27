@@ -1,0 +1,28 @@
+---
+title: Internationalization (i18n)
+description: Learn how the Starlight Group Pages plugin supports multilingual websites and how to translate its UI.
+---
+
+Starlight Group Pages relies on Starlight's built-in support for [internationalization](https://starlight.astro.build/guides/i18n/) to provide multilingual support.
+Follow the Starlight [“Configure i18n”](https://starlight.astro.build/guides/i18n/#configure-i18n) guide and the Starlight Group Pages plugin creates group pages for every language of your website.
+
+## Translated content
+
+Group pages use the content of the current language:
+
+- Group titles and link card labels use the translated labels of your sidebar, e.g. set with the [`translations`](https://starlight.astro.build/guides/sidebar/#internationalization) property of a group.
+- Link cards of untranslated pages link to their [fallback content](https://starlight.astro.build/guides/i18n/#fallback-content), like the sidebar.
+- Automatic [descriptions](/group-pages/#content) follow the list conventions of the current language, e.g. “A, B und C” in German.
+
+## Translate the UI
+
+The Starlight Group Pages plugin allows you to translate the default UI strings so that your website can be fully localized and readers can enjoy a seamless experience in their preferred language.
+
+import { I18n } from "@hideoo/starlight-plugins-docs-components";
+
+<I18n
+  label="Starlight Group Pages"
+  translations={import("../../../../packages/starlight-group-pages/translations")}
+/>
+
+The `starlightGroupPages.sidebarLink` string is the label of the “Overview” sidebar link, which is not used when the [`sidebarLink`](/configuration/#sidebarlink) option is set to `label`.

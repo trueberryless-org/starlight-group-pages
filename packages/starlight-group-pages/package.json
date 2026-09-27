@@ -1,6 +1,6 @@
 {
   "name": "starlight-group-pages",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "MIT",
   "description": "Starlight plugin to give your sidebar groups their own pages.",
   "author": "trueberryless <trueberryless@gmail.com> (https://felixs.dev)",
@@ -9,7 +9,9 @@
     ".": "./index.ts",
     "./middleware": "./middleware.ts",
     "./overrides/MarkdownContent.astro": "./overrides/MarkdownContent.astro",
+    "./overrides/Sidebar.astro": "./overrides/Sidebar.astro",
     "./components/MarkdownContent.astro": "./components/starlight/MarkdownContent.astro",
+    "./components/Sidebar.astro": "./components/starlight/Sidebar.astro",
     "./routes/GroupPage.astro": "./routes/GroupPage.astro",
     "./package.json": "./package.json"
   },

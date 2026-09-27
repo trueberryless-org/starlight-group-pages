@@ -8,13 +8,15 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "astro build",
+    "build": "astro build && DEMO_SIDEBAR_LINK=label astro build",
     "dev": "astro dev",
+    "dev:label": "DEMO_SIDEBAR_LINK=label astro dev",
     "preview": "astro preview",
     "start": "astro dev"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.42.4",
+    "@hideoo/starlight-plugins-docs-components": "^0.5.0",
     "@trueberryless-org/starlight-plugins-docs-components": "^0.7.0",
     "astro": "^7.3.5",
     "astro-contributors": "^0.9.0",

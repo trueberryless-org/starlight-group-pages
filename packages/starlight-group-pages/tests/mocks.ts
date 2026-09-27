@@ -25,7 +25,7 @@ export function createConfig(
     exclude: [],
     extendIndexPages: true,
     layout: "grid",
-    sidebarLink: true,
+    sidebarLink: "item",
     ...config,
   };
 }

@@ -5,8 +5,14 @@ import starlightGroupPages from "starlight-group-pages";
 export default defineConfig({
   integrations: [
     starlight({
-      title: "Overview Pages",
+      title: "Group Pages",
       pagefind: false,
+      head: [
+        {
+          tag: "meta",
+          attrs: { name: "description", content: "Site description" },
+        },
+      ],
       plugins: [
         starlightGroupPages({
           exclude: ["guides/advanced"],

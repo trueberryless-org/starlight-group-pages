@@ -10,6 +10,7 @@ import {
 import { localizeSlug, stripSlugLocale } from "./locale";
 import { getParentPath, getPathName, hrefToSlug, slugToHref } from "./path";
 import type { SidebarEntry, SidebarLink, SidebarOverview } from "./sidebar";
+import { getLabelsSummary } from "./summary";
 import type { StarlightGroupPagesContext } from "./vite";
 
 const collator = new Intl.Collator();
@@ -18,9 +19,12 @@ export function getGroupOverview(
   overview: SidebarOverview,
   options: OverviewOptions
 ): Overview {
+  const entries = getGroupOverviewEntries(overview.group.entries, options);
+
   return {
     title: overview.group.label,
-    entries: getGroupOverviewEntries(overview.group.entries, options),
+    description: getEntriesSummary(entries, options),
+    entries,
   };
 }
 
@@ -29,16 +33,68 @@ export function getDirectoryOverview(
   options: OverviewOptions
 ): Overview {
   const indexPage = getDirectoryPage(directory, options);
+  const entries = getDirectoryEntries(directory, options);
 
   return {
     title: indexPage?.title ?? getPathName(directory),
-    entries: [
-      ...getChildPages(directory, options),
-      ...getChildDirectories(directory, options),
-    ]
-      .sort(compareDirectoryEntries)
-      .map(({ entry }) => entry),
+    description: getEntriesSummary(entries, options),
+    entries,
   };
+}
+
+function getDirectoryEntries(
+  directory: string,
+  options: OverviewOptions
+): OverviewLink[] {
+  return getDirectoryChildren(directory, options).map((child) =>
+    getDirectoryChildEntry(child, options)
+  );
+}
+
+function getDirectoryChildren(
+  directory: string,
+  options: OverviewOptions
+): DirectoryChild[] {
+  return [
+    ...getChildPages(directory, options),
+    ...getChildDirectories(directory, options),
+  ].sort(compareDirectoryChildren);
+}
+
+function getDirectoryChildEntry(
+  child: DirectoryChild,
+  options: OverviewOptions
+): OverviewLink {
+  return {
+    type: "link",
+    label: child.label,
+    href: getLocalizedHref(child.slug, options),
+    description:
+      child.description ??
+      (child.isDirectory
+        ? getDirectorySummary(child.slug, options)
+        : undefined),
+  };
+}
+
+function getDirectorySummary(
+  directory: string,
+  options: OverviewOptions
+): string | undefined {
+  return getLabelsSummary(
+    getDirectoryChildren(directory, options).map(({ label }) => label),
+    options.lang
+  );
+}
+
+function getEntriesSummary(
+  entries: OverviewEntry[],
+  options: OverviewOptions
+): string | undefined {
+  return getLabelsSummary(
+    entries.map(({ label }) => label),
+    options.lang
+  );
 }
 
 function getGroupOverviewEntries(
@@ -62,8 +118,9 @@ function getGroupOverviewEntries(
           type: "link",
           label: entry.label,
           href: groupOverview.href,
-          description: getDirectoryPage(groupOverview.directory, options)
-            ?.description,
+          description:
+            getDirectoryPage(groupOverview.directory, options)?.description ??
+            getGroupSummary(groupOverview, options),
         },
       ];
     }
@@ -74,6 +131,22 @@ function getGroupOverviewEntries(
       ? [{ type: "group", label: entry.label, entries: groupEntries }]
       : [];
   });
+}
+
+function getGroupSummary(
+  overview: SidebarOverview,
+  options: OverviewOptions
+): string | undefined {
+  return getLabelsSummary(
+    overview.group.entries
+      .filter(
+        (entry) =>
+          entry.type === "group" ||
+          hrefToSlug(entry.href, options.context) !== overview.slug
+      )
+      .map(({ label }) => label),
+    options.lang
+  );
 }
 
 function getLinkOverviewEntry(
@@ -109,7 +182,7 @@ function isCurrentLink(link: SidebarLink, options: OverviewOptions): boolean {
 function getChildPages(
   directory: string,
   options: OverviewOptions
-): SortableOverviewEntry[] {
+): DirectoryChild[] {
   const directories = getLocaleDirectories(options.docs, options.locale);
   const slugs = new Set(
     getLocalePages(options.docs.pages.values(), options.locale, options.context)
@@ -126,7 +199,9 @@ function getChildPages(
     )
     .filter((page): page is DocsPage => page !== undefined && !page.hidden)
     .map((page) => ({
-      entry: getPageOverviewEntry(page, options),
+      description: page.description,
+      isDirectory: false,
+      label: page.label,
       order: page.order,
       slug: page.slug,
     }));
@@ -135,7 +210,7 @@ function getChildPages(
 function getChildDirectories(
   directory: string,
   options: OverviewOptions
-): SortableOverviewEntry[] {
+): DirectoryChild[] {
   return [...getLocaleDirectories(options.docs, options.locale)]
     .filter((childDirectory) => getParentPath(childDirectory) === directory)
     .flatMap((childDirectory) => {
@@ -156,29 +231,14 @@ function getChildDirectories(
 
       return [
         {
-          entry: {
-            type: "link" as const,
-            label: page?.label ?? getPathName(childDirectory),
-            href: getLocalizedHref(childDirectory, options),
-            description: page?.description,
-          },
+          description: page?.description,
+          isDirectory: true,
+          label: page?.label ?? getPathName(childDirectory),
           order: page?.order,
           slug: childDirectory,
         },
       ];
     });
-}
-
-function getPageOverviewEntry(
-  page: DocsPage,
-  options: OverviewOptions
-): OverviewLink {
-  return {
-    type: "link",
-    label: page.label,
-    href: getLocalizedHref(page.slug, options),
-    description: page.description,
-  };
 }
 
 function getDirectoryPage(
@@ -192,9 +252,9 @@ function getLocalizedHref(slug: string, options: OverviewOptions): string {
   return slugToHref(localizeSlug(slug, options.locale), options.context);
 }
 
-function compareDirectoryEntries(
-  a: SortableOverviewEntry,
-  b: SortableOverviewEntry
+function compareDirectoryChildren(
+  a: DirectoryChild,
+  b: DirectoryChild
 ): number {
   const orderA = a.order ?? Number.MAX_VALUE;
   const orderB = b.order ?? Number.MAX_VALUE;
@@ -209,11 +269,13 @@ export interface OverviewOptions {
   context: StarlightGroupPagesContext;
   currentSlug: string;
   docs: DocsIndex;
+  lang: string;
   locale: string | undefined;
   overviews: SidebarOverview[];
 }
 
 export interface Overview {
+  description: string | undefined;
   title: string;
   entries: OverviewEntry[];
 }
@@ -233,8 +295,10 @@ export interface OverviewGroup {
   entries: OverviewEntry[];
 }
 
-interface SortableOverviewEntry {
-  entry: OverviewLink;
+interface DirectoryChild {
+  description: string | undefined;
+  isDirectory: boolean;
+  label: string;
   order: number | undefined;
   slug: string;
 }
