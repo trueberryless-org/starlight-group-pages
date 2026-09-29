@@ -1,5 +1,17 @@
 # starlight-group-pages
 
+## 0.2.0
+
+### Minor Changes
+
+- [#45](https://github.com/trueberryless-org/starlight-group-pages/pull/45) [`748d9b9`](https://github.com/trueberryless-org/starlight-group-pages/commit/748d9b9afcf00b6d6f25c4db663b0375d0601c8f) Thanks [@trueberryless-bot](https://github.com/trueberryless-bot)! - Adds a `<GroupPageCards>` component to render the link cards of a directory on any page, e.g. `<GroupPageCards directory="guides" />`.
+  
+  Group pages now only omit the link to the group page itself from their link cards, so the component also lists the current page when used on a page of the listed directory.
+
+### Patch Changes
+
+- [#45](https://github.com/trueberryless-org/starlight-group-pages/pull/45) [`748d9b9`](https://github.com/trueberryless-org/starlight-group-pages/commit/748d9b9afcf00b6d6f25c4db663b0375d0601c8f) Thanks [@trueberryless-bot](https://github.com/trueberryless-bot)! - Fixes sidebar groups opened by clicking their label with the `sidebarLink: 'label'` option collapsing again when navigating to a page outside of the group.
+
 ## 0.1.1
 
 ### Patch Changes
