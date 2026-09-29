@@ -154,6 +154,9 @@ const { sublist, nested } = Astro.props;
     }
 
     .sl-group-pages-group {
+      --sl-group-pages-toggle-size: calc(
+        1.25rem + 2 * var(--sl-sidebar-item-padding-inline)
+      );
       position: relative;
     }
 
@@ -161,14 +164,17 @@ const { sublist, nested } = Astro.props;
       position: absolute;
       inset-block-start: 0;
       inset-inline-end: 0;
+      justify-content: center;
       block-size: calc(1.4em + 0.4em);
+      inline-size: var(--sl-group-pages-toggle-size);
       border-radius: 0.25rem;
       color: var(--sl-color-white);
       font-size: var(--sl-text-lg);
     }
 
-    :global(.sl-group-pages-link[aria-current="page"]) + details > summary {
-      color: var(--sl-color-text-invert);
+    .sl-group-pages-group > details > summary:hover,
+    .sl-group-pages-group > details > summary:focus-visible {
+      background-color: var(--sl-color-hairline-light);
     }
 
     @media (min-width: 50rem) {

@@ -35,13 +35,18 @@ const link = getGroupLabelLink(group);
       display: block;
       border-radius: 0.25rem;
       text-decoration: none;
+      margin-inline-end: var(--sl-group-pages-toggle-size);
       padding-block: 0.2em;
-      padding-inline: var(--sl-sidebar-item-padding-inline)
-        calc(1.25rem + 2 * var(--sl-sidebar-item-padding-inline));
+      padding-inline: var(--sl-sidebar-item-padding-inline);
       line-height: 1.4;
       font-size: var(--sl-text-lg);
       font-weight: 600;
       color: var(--sl-color-white);
+    }
+
+    a:hover,
+    a:focus-visible {
+      background-color: var(--sl-color-hairline-light);
     }
 
     [aria-current="page"],
