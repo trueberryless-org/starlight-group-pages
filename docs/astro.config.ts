@@ -67,10 +67,11 @@ export default defineConfig({
           label: "Start Here",
           items: [
             "getting-started",
+            "configuration",
             "group-pages",
             "customization",
+            "components",
             "i18n",
-            "configuration",
           ],
         },
         {
@@ -88,6 +89,9 @@ export default defineConfig({
           ],
         },
       ],
+      components: {
+        Banner: "./src/components/Banner.astro",
+      },
       credits: true,
       routeMiddleware: "./src/routeData.ts",
     }),

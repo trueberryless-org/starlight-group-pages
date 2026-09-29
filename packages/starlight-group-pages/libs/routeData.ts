@@ -4,6 +4,8 @@ import context from "virtual:starlight-group-pages/context";
 
 import { getDocsIndex } from "./content";
 import { hasDirectoryPage, isOverviewDirectory } from "./directory";
+import { type DocsIndex, getLocaleDirectories } from "./docs";
+import { throwPluginError } from "./error";
 import { stripSlugLocale } from "./locale";
 import {
   type Overview,
@@ -18,50 +20,94 @@ import { addGroupPageLinks, getSidebarOverviews } from "./sidebar";
 export async function updateStarlightRoute(
   starlightRoute: StarlightRouteData,
   t: Translate
-): Promise<StarlightGroupPagesRouteData> {
+): Promise<void> {
+  const options = getOverviewOptions(starlightRoute, await getDocsIndex());
+  const currentSlug = getCurrentSlug(starlightRoute);
+  const currentOverview = getCurrentOverview(currentSlug, options);
+
+  if (currentOverview?.isGeneratedPage) {
+    updateGeneratedPageMetadata(starlightRoute, currentOverview.overview);
+  }
+
+  if (!config.sidebarLink) return;
+
+  if (
+    addGroupPageLinks(options.overviews, {
+      ...options,
+      currentSlug,
+      label: t("starlightGroupPages.sidebarLink"),
+      mode: config.sidebarLink,
+    })
+  ) {
+    starlightRoute.pagination = getPagination(
+      starlightRoute.sidebar,
+      context.pagination,
+      starlightRoute.entry.data
+    );
+  }
+}
+
+export async function getCurrentPageOverview(
+  starlightRoute: StarlightRouteData
+): Promise<Overview | undefined> {
+  const options = getOverviewOptions(starlightRoute, await getDocsIndex());
+
+  return getCurrentOverview(getCurrentSlug(starlightRoute), options)?.overview;
+}
+
+export async function getGroupPageCardsOverview(
+  directory: string,
+  starlightRoute: StarlightRouteData
+): Promise<Overview> {
   const docs = await getDocsIndex();
+  const normalizedDirectory = stripLeadingAndTrailingSlashes(directory);
+
+  if (
+    !getLocaleDirectories(docs, starlightRoute.locale).has(normalizedDirectory)
+  ) {
+    throwPluginError(
+      `The \`${directory}\` directory passed to the \`<GroupPageCards>\` component does not contain any page.`,
+      "The `directory` prop must be a directory relative to `src/content/docs/` without a locale, e.g. `guides` or `guides/advanced`."
+    );
+  }
+
+  const options = getOverviewOptions(starlightRoute, docs);
+  const sidebarOverview = options.overviews.find(
+    (overview) => overview.directory === normalizedDirectory
+  );
+
+  return sidebarOverview
+    ? getGroupOverview(sidebarOverview, options)
+    : getDirectoryOverview(normalizedDirectory, options);
+}
+
+function getOverviewOptions(
+  starlightRoute: StarlightRouteData,
+  docs: DocsIndex
+): OverviewOptions {
   const sidebarOptions = {
     config,
     context,
     docs,
     locale: starlightRoute.locale,
   };
-  const currentSlug = stripLeadingAndTrailingSlashes(starlightRoute.id);
-  const overviews = getSidebarOverviews(starlightRoute.sidebar, sidebarOptions);
-  const overview = getCurrentOverview(starlightRoute, {
+
+  return {
     ...sidebarOptions,
-    currentSlug,
     lang: starlightRoute.lang,
-    overviews,
-  });
+    overviews: getSidebarOverviews(starlightRoute.sidebar, sidebarOptions),
+  };
+}
 
-  if (config.sidebarLink) {
-    const label = t("starlightGroupPages.sidebarLink");
-
-    if (
-      addGroupPageLinks(overviews, {
-        ...sidebarOptions,
-        currentSlug,
-        label,
-        mode: config.sidebarLink,
-      })
-    ) {
-      starlightRoute.pagination = getPagination(
-        starlightRoute.sidebar,
-        context.pagination,
-        starlightRoute.entry.data
-      );
-    }
-  }
-
-  return { overview };
+function getCurrentSlug(starlightRoute: StarlightRouteData): string {
+  return stripLeadingAndTrailingSlashes(starlightRoute.id);
 }
 
 function getCurrentOverview(
-  starlightRoute: StarlightRouteData,
+  currentSlug: string,
   options: OverviewOptions
-): Overview | undefined {
-  const directory = stripSlugLocale(options.currentSlug, context);
+): CurrentOverview | undefined {
+  const directory = stripSlugLocale(currentSlug, context);
 
   if (!isOverviewDirectory(directory, options.docs, options.locale, config)) {
     return undefined;
@@ -77,15 +123,13 @@ function getCurrentOverview(
   if (!isGeneratedPage && !config.extendIndexPages) return undefined;
 
   const sidebarOverview = options.overviews.find(
-    (overview) => overview.slug === options.currentSlug
+    (overview) => overview.slug === currentSlug
   );
   const overview = sidebarOverview
     ? getGroupOverview(sidebarOverview, options)
     : getDirectoryOverview(directory, options);
 
-  if (isGeneratedPage) updateGeneratedPageMetadata(starlightRoute, overview);
-
-  return overview;
+  return { isGeneratedPage, overview };
 }
 
 function updateGeneratedPageMetadata(
@@ -150,8 +194,9 @@ function getUpdatedHeadTag(
   return tag;
 }
 
-export interface StarlightGroupPagesRouteData {
-  overview: Overview | undefined;
+interface CurrentOverview {
+  isGeneratedPage: boolean;
+  overview: Overview;
 }
 
 type HeadTag = StarlightRouteData["head"][number];

@@ -1,7 +1,9 @@
 ---
+import { getCurrentPageOverview } from "../../libs/routeData";
+
 import OverviewEntries from "../OverviewEntries.astro";
 
-const { overview } = Astro.locals.starlightGroupPages;
+const overview = await getCurrentPageOverview(Astro.locals.starlightRoute);
 ---
 
 {overview && <OverviewEntries entries={overview.entries} />}

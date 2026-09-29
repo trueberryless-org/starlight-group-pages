@@ -1,0 +1,16 @@
+---
+import { getGroupPageCardsOverview } from "../libs/routeData";
+
+import OverviewEntries from "./OverviewEntries.astro";
+
+interface Props {
+  directory: string;
+}
+
+const overview = await getGroupPageCardsOverview(
+  Astro.props.directory,
+  Astro.locals.starlightRoute
+);
+---
+
+<OverviewEntries entries={overview.entries} />

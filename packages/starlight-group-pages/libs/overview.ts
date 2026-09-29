@@ -19,7 +19,11 @@ export function getGroupOverview(
   overview: SidebarOverview,
   options: OverviewOptions
 ): Overview {
-  const entries = getGroupOverviewEntries(overview.group.entries, options);
+  const entries = getGroupOverviewEntries(
+    overview.group.entries,
+    overview.slug,
+    options
+  );
 
   return {
     title: overview.group.label,
@@ -99,11 +103,12 @@ function getEntriesSummary(
 
 function getGroupOverviewEntries(
   entries: SidebarEntry[],
+  groupPageSlug: string,
   options: OverviewOptions
 ): OverviewEntry[] {
   return entries.flatMap((entry): OverviewEntry[] => {
     if (entry.type === "link") {
-      return isCurrentLink(entry, options)
+      return hrefToSlug(entry.href, options.context) === groupPageSlug
         ? []
         : [getLinkOverviewEntry(entry, options)];
     }
@@ -125,7 +130,11 @@ function getGroupOverviewEntries(
       ];
     }
 
-    const groupEntries = getGroupOverviewEntries(entry.entries, options);
+    const groupEntries = getGroupOverviewEntries(
+      entry.entries,
+      groupPageSlug,
+      options
+    );
 
     return groupEntries.length > 0
       ? [{ type: "group", label: entry.label, entries: groupEntries }]
@@ -170,13 +179,6 @@ function getLinkOverviewEntry(
     href: link.href,
     description: page?.description,
   };
-}
-
-function isCurrentLink(link: SidebarLink, options: OverviewOptions): boolean {
-  return (
-    link.isCurrent ||
-    hrefToSlug(link.href, options.context) === options.currentSlug
-  );
 }
 
 function getChildPages(
@@ -267,7 +269,6 @@ function compareDirectoryChildren(
 export interface OverviewOptions {
   config: Pick<StarlightGroupPagesConfig, "exclude">;
   context: StarlightGroupPagesContext;
-  currentSlug: string;
   docs: DocsIndex;
   lang: string;
   locale: string | undefined;

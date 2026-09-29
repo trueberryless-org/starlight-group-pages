@@ -158,6 +158,26 @@ describe("basic", () => {
       []
     );
   });
+
+  test("renders the link cards of a directory with the GroupPageCards component", () => {
+    const html = readFixtureOutput("basic", "cards/index.html");
+
+    expect(html).toContain("Content between the cards.");
+    expect(getOverviewCards(html)).toEqual([
+      {
+        description: "Extend &amp; enhance.",
+        href: "/guides/advanced/plugins/",
+        title: "Plugins &lt;3",
+      },
+      {
+        description: "Customize the theme.",
+        href: "/guides/advanced/theming/",
+        title: "Theming",
+      },
+      { description: "The API.", href: "/reference/api/", title: "API" },
+      { description: undefined, href: "/reference/cli/", title: "CLI" },
+    ]);
+  });
 });
 
 describe("no-sidebar", () => {

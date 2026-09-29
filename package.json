@@ -11,6 +11,7 @@
     "check": "pnpm --filter starlight-group-pages-docs astro sync && astro check --noSync",
     "dev": "pnpm --filter starlight-group-pages-docs dev",
     "format": "prettier . --write --cache --ignore-unknown",
+    "preview": "pnpm --filter starlight-group-pages-docs preview",
     "test": "pnpm --filter starlight-group-pages test",
     "version": "pnpm changeset version && pnpm i --no-frozen-lockfile"
   },

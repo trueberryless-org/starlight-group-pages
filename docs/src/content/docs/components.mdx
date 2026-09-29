@@ -1,0 +1,62 @@
+---
+title: Components
+description: Learn how to render the link cards of a directory anywhere in your docs with the GroupPageCards component.
+---
+
+The Starlight Group Pages plugin provides a component to render the link cards of a [group page](/group-pages/) on any page of your docs.
+
+## `<GroupPageCards>`
+
+The `<GroupPageCards>` component renders the link cards of a directory, e.g. to list your guides on your landing page or to place the link cards of an index page somewhere else than at its end.
+
+```mdx
+---
+# src/content/docs/index.mdx
+title: Welcome
+---
+
+import GroupPageCards from "starlight-group-pages/components/GroupPageCards.astro";
+
+## Guides
+
+<GroupPageCards directory="guides" />
+```
+
+The component renders the same link cards as the group page of the directory, see [“Group Pages”](/group-pages/#content), with the [`layout`](/configuration/#layout) of your configuration.
+On [multilingual sites](/i18n/), it uses the content of the language of the current page.
+
+import GroupPageCards from "starlight-group-pages/components/GroupPageCards.astro";
+
+The following link cards are rendered with `<GroupPageCards directory="demo/guides" />`:
+
+<GroupPageCards directory="demo/guides" />
+
+### Props
+
+#### `directory`
+
+**Type:** `string`  
+**Required**
+
+The directory to list, relative to `src/content/docs/` and without the locale of multilingual sites, e.g. `guides` or `guides/advanced`.
+The build fails if the directory contains no page visible in the sidebar.
+
+### Place the link cards of an index page
+
+By default, the link cards of a directory are appended to its index page.
+To place them somewhere else in the page, set the [`extendIndexPages`](/configuration/#extendindexpages) option to `false` and render the component in your index page:
+
+```mdx
+---
+# src/content/docs/guides/index.mdx
+title: Guides
+---
+
+import GroupPageCards from "starlight-group-pages/components/GroupPageCards.astro";
+
+Start with one of the following guides:
+
+<GroupPageCards directory="guides" />
+
+Still stuck? Ask for help on Discord.
+```

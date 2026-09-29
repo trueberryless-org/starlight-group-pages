@@ -1,0 +1,79 @@
+---
+import Default from "@astrojs/starlight/components/Banner.astro";
+---
+
+<Default />
+
+<script>
+  // The demo banner links to the same page of the other demo, which has a different sidebar hash, so Starlight would
+  // not restore the sidebar state there: groups only open because they contain the current page would collapse when
+  // navigating to a page outside of them. This carries the state of the sidebar over to the other demo.
+  const demoSwitchKey = "starlight-group-pages-demo-switch";
+  const sidebarStateKey = "sl-sidebar-state";
+
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    if (!event.target.closest("[data-demo-switch]")) return;
+
+    try {
+      sessionStorage.setItem(demoSwitchKey, JSON.stringify(getOpenStates()));
+    } catch {
+      // Persisting the sidebar state is a progressive enhancement.
+    }
+  });
+
+  restoreDemoSwitchState();
+
+  function restoreDemoSwitchState() {
+    try {
+      const storedOpenStates = sessionStorage.getItem(demoSwitchKey);
+      if (!storedOpenStates) return;
+
+      sessionStorage.removeItem(demoSwitchKey);
+
+      const hash = document.querySelector<HTMLElement>(
+        "sl-sidebar-state-persist"
+      )?.dataset["hash"];
+      if (!hash) return;
+
+      const open: unknown = JSON.parse(storedOpenStates);
+      if (!Array.isArray(open)) return;
+
+      for (const [index, details] of getSidebarDetails()) {
+        if (typeof open[index] === "boolean") details.open = open[index];
+      }
+
+      sessionStorage.setItem(
+        sidebarStateKey,
+        JSON.stringify({ hash, open, scroll: 0 })
+      );
+    } catch {
+      // Persisting the sidebar state is a progressive enhancement.
+    }
+  }
+
+  function getOpenStates(): boolean[] {
+    const open: boolean[] = [];
+
+    for (const [index, details] of getSidebarDetails()) {
+      open[index] = details.open;
+    }
+
+    return open;
+  }
+
+  function getSidebarDetails(): [number, HTMLDetailsElement][] {
+    return [
+      ...document.querySelectorAll<HTMLDetailsElement>(
+        "#starlight__sidebar details"
+      ),
+    ].flatMap((details) => {
+      const restoreElement = details.querySelector<HTMLElement>(
+        ":scope > sl-sidebar-restore"
+      );
+      const index = Number.parseInt(restoreElement?.dataset["index"] ?? "");
+
+      return Number.isNaN(index) ? [] : [[index, details]];
+    });
+  }
+</script>

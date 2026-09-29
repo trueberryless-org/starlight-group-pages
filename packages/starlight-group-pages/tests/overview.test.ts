@@ -32,11 +32,10 @@ function getFirstOverview(overviews: SidebarOverview[]): SidebarOverview {
   return overview;
 }
 
-function getOptions(currentSlug: string, overviews: SidebarOverview[] = []) {
+function getOptions(overviews: SidebarOverview[] = []) {
   return {
     config: createConfig(),
     context: createContext(),
-    currentSlug,
     docs,
     lang: "en",
     locale: undefined,
@@ -56,11 +55,11 @@ describe("getGroupOverview", () => {
       createLink("https://astro.build", "Astro"),
     ]);
     const sidebar = [guides];
-    const overviews = getSidebarOverviews(sidebar, getOptions(""));
+    const overviews = getSidebarOverviews(sidebar, getOptions());
 
     expect(
       getGroupOverview(getFirstOverview(overviews), {
-        ...getOptions("guides"),
+        ...getOptions(),
         overviews,
       })
     ).toEqual({
@@ -89,24 +88,39 @@ describe("getGroupOverview", () => {
     });
   });
 
-  test("omits the current page", () => {
+  test("omits the group page", () => {
     const advanced = createGroup("advanced", [
       createLink("/guides/advanced/", "Advanced", true),
       createLink("/guides/advanced/d/", "D"),
     ]);
-    const overviews = getSidebarOverviews([advanced], getOptions(""));
+    const overviews = getSidebarOverviews([advanced], getOptions());
 
     expect(
       getGroupOverview(getFirstOverview(overviews), {
-        ...getOptions("guides/advanced"),
+        ...getOptions(),
         overviews,
       }).entries.map(({ label }) => label)
     ).toEqual(["D"]);
   });
 
+  test("lists the current page when it is not the group page", () => {
+    const guides = createGroup("Guides", [
+      createLink("/guides/a/", "A", true),
+      createLink("/guides/b/", "Bee"),
+    ]);
+    const overviews = getSidebarOverviews([guides], getOptions());
+
+    expect(
+      getGroupOverview(getFirstOverview(overviews), {
+        ...getOptions(),
+        overviews,
+      }).entries.map(({ label }) => label)
+    ).toEqual(["A", "Bee"]);
+  });
+
   test("renders nested groups without an overview page as groups", () => {
     const options = {
-      ...getOptions("guides"),
+      ...getOptions(),
       config: createConfig({ exclude: ["guides/advanced"] }),
     };
     const advanced = createGroup("advanced", [
@@ -143,7 +157,7 @@ describe("getGroupOverview descriptions", () => {
       createEntry("guides/advanced/b", { title: "B" }),
       createEntry("guides/advanced/c", { title: "C" }),
     ]);
-    const options = { ...getOptions("guides"), docs: summaryDocs };
+    const options = { ...getOptions(), docs: summaryDocs };
     const advanced = createGroup("Advanced", [
       createLink("/guides/advanced/b/", "B"),
       createLink("/guides/advanced/c/", "C"),
@@ -168,7 +182,7 @@ describe("getGroupOverview descriptions", () => {
 
 describe("getDirectoryOverview", () => {
   test("lists the visible pages and subdirectories sorted like the sidebar", () => {
-    expect(getDirectoryOverview("guides", getOptions("guides"))).toEqual({
+    expect(getDirectoryOverview("guides", getOptions())).toEqual({
       title: "guides",
       description: "Bee, A, and Advanced",
       entries: [
@@ -203,7 +217,7 @@ describe("getDirectoryOverview", () => {
 
     expect(
       getDirectoryOverview("guides", {
-        ...getOptions("guides"),
+        ...getOptions(),
         docs: nestedDocs,
       }).entries[1]
     ).toEqual({
@@ -216,7 +230,7 @@ describe("getDirectoryOverview", () => {
 
   test("uses the title of the index page", () => {
     expect(
-      getDirectoryOverview("guides/advanced", getOptions("guides/advanced"))
+      getDirectoryOverview("guides/advanced", getOptions())
         .title
     ).toBe("Advanced");
   });

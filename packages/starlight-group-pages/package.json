@@ -10,6 +10,7 @@
     "./middleware": "./middleware.ts",
     "./overrides/MarkdownContent.astro": "./overrides/MarkdownContent.astro",
     "./overrides/Sidebar.astro": "./overrides/Sidebar.astro",
+    "./components/GroupPageCards.astro": "./components/GroupPageCards.astro",
     "./components/MarkdownContent.astro": "./components/starlight/MarkdownContent.astro",
     "./components/Sidebar.astro": "./components/starlight/Sidebar.astro",
     "./routes/GroupPage.astro": "./routes/GroupPage.astro",

@@ -29,6 +29,52 @@ const link = getGroupLabelLink(group);
   </a>
 )}
 
+<script>
+  // Starlight only persists the open state of groups toggled with their `<summary>`, so a group opened by clicking its
+  // label link would collapse again when navigating to a page outside of it. This mirrors Starlight's
+  // `SidebarPersistState` script to persist the group as open instead.
+  const storageKey = "sl-sidebar-state";
+
+  document
+    .getElementById("starlight__sidebar")
+    ?.addEventListener("click", (event) => {
+      if (!(event.target instanceof Element)) return;
+
+      const link = event.target.closest(".sl-group-pages-link");
+      const restoreElement = link?.parentElement?.querySelector(
+        ":scope > details > sl-sidebar-restore"
+      );
+      const index = Number.parseInt(
+        restoreElement instanceof HTMLElement
+          ? (restoreElement.dataset["index"] ?? "")
+          : ""
+      );
+      if (Number.isNaN(index)) return;
+
+      persistOpenGroup(index);
+    });
+
+  function persistOpenGroup(index: number) {
+    try {
+      const hash =
+        document.querySelector<HTMLElement>("sl-sidebar-state-persist")
+          ?.dataset["hash"] ?? "";
+      const storedState = JSON.parse(
+        sessionStorage.getItem(storageKey) ?? "{}"
+      );
+      const state =
+        storedState.hash === hash && Array.isArray(storedState.open)
+          ? storedState
+          : { hash, open: [], scroll: 0 };
+
+      state.open[index] = true;
+      sessionStorage.setItem(storageKey, JSON.stringify(state));
+    } catch {
+      // Like Starlight, persisting the sidebar state is a progressive enhancement.
+    }
+  }
+</script>
+
 <style>
   @layer starlight.core {
     a {
