@@ -18,6 +18,7 @@ export default defineConfig({
   integrations: [
     starlight({
       components: {
+        Banner: "./src/components/Banner.astro",
         Footer: "./src/components/Footer.astro",
       },
       title: "Starlight Group Pages",
@@ -97,9 +98,6 @@ export default defineConfig({
           ],
         },
       ],
-      components: {
-        Banner: "./src/components/Banner.astro",
-      },
       credits: true,
       routeMiddleware: "./src/routeData.ts",
     }),
