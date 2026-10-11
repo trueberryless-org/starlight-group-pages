@@ -1,9 +1,33 @@
 {
   "name": "starlight-group-pages",
   "version": "0.2.0",
-  "license": "MIT",
   "description": "Starlight plugin to give your sidebar groups their own pages.",
+  "keywords": [
+    "starlight",
+    "plugin",
+    "overview",
+    "overview-pages",
+    "sidebar",
+    "sidebar-groups",
+    "index-pages",
+    "link-cards",
+    "documentation",
+    "astro",
+    "withastro",
+    "astro-integration"
+  ],
+  "homepage": "https://starlight-group-pages.netlify.app/",
+  "bugs": {
+    "url": "https://github.com/trueberryless-org/starlight-group-pages/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trueberryless-org/starlight-group-pages.git",
+    "directory": "packages/starlight-group-pages"
+  },
+  "license": "MIT",
   "author": "trueberryless <trueberryless@gmail.com> (https://felixs.dev)",
+  "sideEffects": false,
   "type": "module",
   "exports": {
     ".": "./index.ts",
@@ -36,27 +60,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "sideEffects": false,
-  "keywords": [
-    "starlight",
-    "plugin",
-    "overview",
-    "overview-pages",
-    "sidebar",
-    "sidebar-groups",
-    "index-pages",
-    "link-cards",
-    "documentation",
-    "astro",
-    "withastro",
-    "astro-integration"
-  ],
-  "homepage": "https://starlight-group-pages.netlify.app",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trueberryless-org/starlight-group-pages.git",
-    "directory": "packages/starlight-group-pages"
-  },
-  "bugs": "https://github.com/trueberryless-org/starlight-group-pages/issues"
+  }
 }

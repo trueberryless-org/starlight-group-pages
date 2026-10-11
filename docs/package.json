@@ -1,10 +1,19 @@
 {
   "name": "starlight-group-pages-docs",
   "version": "0.0.1",
-  "license": "MIT",
-  "description": "Documentation for the Starlight Group Pages plugin.",
-  "author": "trueberryless <trueberryless@gmail.com> (https://felixs.dev)",
   "private": true,
+  "description": "Documentation for the Starlight Group Pages plugin.",
+  "homepage": "https://starlight-group-pages.netlify.app/",
+  "bugs": {
+    "url": "https://github.com/trueberryless-org/starlight-group-pages/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trueberryless-org/starlight-group-pages.git",
+    "directory": "docs"
+  },
+  "license": "MIT",
+  "author": "trueberryless <trueberryless@gmail.com> (https://felixs.dev)",
   "type": "module",
   "scripts": {
     "astro": "astro",
@@ -25,14 +34,8 @@
     "starlight-links-validator": "^0.26.0",
     "starlight-package-managers": "^0.13.0"
   },
+  "packageManager": "pnpm@11.28.0",
   "engines": {
     "node": ">=22.23.2"
-  },
-  "homepage": "https://starlight-group-pages.netlify.app",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trueberryless-org/starlight-group-pages.git",
-    "directory": "docs"
-  },
-  "bugs": "https://github.com/trueberryless-org/starlight-group-pages/issues"
+  }
 }
